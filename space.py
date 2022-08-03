@@ -43,7 +43,8 @@ class Game:
         self.enemy_ships_advanced_group = pygame.sprite.Group()
         self.enemy_boss_group = pygame.sprite.Group()
         self.enemy_kill = {}
-        self.enemy_advanced_kill = {}
+        self.enemy_advanced_hit = {}
+        self.enemy_advanced_kill = pygame.sprite.Group()
         self.enemy_spawn_time = pygame.time.get_ticks()
         self.crash = {}
         self.crash_advanced = {}
@@ -93,7 +94,7 @@ class Game:
             enemy_explosion = explosion_class(enemy.rect.x, enemy.rect.y, explosion_anim)
             self.explosion_group.add(enemy_explosion)
             if enemy_type == 'advanced':
-                self.score += 50
+                self.score += 100
             else:
                 self.score += 10
                 self.kill_count += 1
@@ -102,6 +103,24 @@ class Game:
                     pygame.mixer.Sound.play(explosion_sound_big)
                 if audio_play:
                     pygame.mixer.Sound.play(explosion_sound_small)
+
+    def enemy_advanced_damaged(self, enemy_hit_group, enemy_kill_group, enemy_group):
+        keys_to_del = []
+        for shot, enemy in iter(enemy_hit_group.items()):
+            for ship in enemy:
+                ship.life -= 1
+                if ship.life <= 0:
+                    enemy_kill_group.add(ship)
+                    enemy_group.remove(ship)
+                    keys_to_del.append(shot)
+        for key in keys_to_del:
+            del enemy_hit_group[key]
+
+        if enemy_kill_group:
+            self.enemy_destroyed(self.enemy_advanced_kill, True, play_sound, 'advanced',
+                                 EXPLOSION_BOSS_SPRITES, ENEMY_BIG_EXPLOSION_SOUND, ENEMY_EXPLOSION_SOUND,
+                                 Explosion)
+            enemy_kill_group.empty()
 
     def boss_hit(self, hit_group, sound_play, music_play, dmg, explosion_sound, music_track, explosion_class):
         for _ in iter(hit_group):
@@ -192,14 +211,14 @@ class Game:
                     self.enemy_destroyed(self.enemy_kill, True, play_sound, 'regular', EXPLOSION_ENEMY_SPRITES,
                                          ENEMY_BIG_EXPLOSION_SOUND, ENEMY_EXPLOSION_SOUND, Explosion)
 
-                self.enemy_advanced_kill = pygame.sprite.groupcollide(self.lasers_group,
-                                                                      self.enemy_ships_advanced_group, True, True,
-                                                                      collided=lambda s1, s2: pygame.sprite.collide_mask
-                                                                      (s1, s2) is not None)
-                if self.enemy_advanced_kill:
-                    self.enemy_destroyed(self.enemy_advanced_kill, True, play_sound, 'advanced',
-                                         EXPLOSION_ENEMY_SPRITES, ENEMY_BIG_EXPLOSION_SOUND, ENEMY_EXPLOSION_SOUND,
-                                         Explosion)
+                self.enemy_advanced_hit = pygame.sprite.groupcollide(self.lasers_group,
+                                                                     self.enemy_ships_advanced_group, True, False,
+                                                                     collided=lambda s1, s2: pygame.sprite.collide_mask
+                                                                     (s1, s2) is not None)
+
+                if self.enemy_advanced_hit:
+                    self.enemy_advanced_damaged(self.enemy_advanced_hit, self.enemy_advanced_kill,
+                                                self.enemy_ships_advanced_group)
 
                 # Check if an enemy is hit by torpedo
                 self.torpedo_hit_enemy = pygame.sprite.groupcollide(self.torpedoes_group, self.enemy_ships_group, True,
