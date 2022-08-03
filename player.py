@@ -81,5 +81,5 @@ class PlayerProjectile(pygame.sprite.Sprite):
     def update(self):
         self.rect.y -= self.speed * self.delta_time
 
-        if self.rect.y < 0:
+        if self.rect.y < -50:
             self.kill()
