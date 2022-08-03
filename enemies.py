@@ -81,6 +81,7 @@ class EnemyShipAdvanced(EnemyShip):
         self.last_shot = pygame.time.get_ticks()
         self.speed = 200
         self.target = 0
+        self.life = 5
 
     def move(self, delta_time, height):
         if self.rect.y < height / 8:
