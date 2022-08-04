@@ -88,16 +88,17 @@ class Game:
         self.enemy_boss_group.draw(screen)
         self.enemy_boss.move(delta_time, height)
 
-    def enemy_destroyed(self, enemy_group, audio_play, sound_play, enemy_type, explosion_anim, explosion_sound_big,
-                        explosion_sound_small, explosion_class):
+    def enemy_destroyed(self, enemy_group, audio_play, sound_play, enemy_type, explosion_anim, explosion_anim_big,
+                        explosion_sound_big, explosion_sound_small, explosion_class):
         for enemy in enemy_group:
-            enemy_explosion = explosion_class(enemy.rect.x, enemy.rect.y, explosion_anim)
-            self.explosion_group.add(enemy_explosion)
             if enemy_type == 'advanced':
+                enemy_explosion = explosion_class(enemy.rect.x, enemy.rect.y, explosion_anim_big)
                 self.score += 100
             else:
+                enemy_explosion = explosion_class(enemy.rect.x, enemy.rect.y, explosion_anim)
                 self.score += 10
                 self.kill_count += 1
+            self.explosion_group.add(enemy_explosion)
             if sound_play:
                 if audio_play and enemy_type == 'advanced':
                     pygame.mixer.Sound.play(explosion_sound_big)
@@ -118,8 +119,8 @@ class Game:
 
         if enemy_kill_group:
             self.enemy_destroyed(self.enemy_advanced_kill, True, play_sound, 'advanced',
-                                 EXPLOSION_BOSS_SPRITES, ENEMY_BIG_EXPLOSION_SOUND, ENEMY_EXPLOSION_SOUND,
-                                 Explosion)
+                                 EXPLOSION_ENEMY_SPRITES, EXPLOSION_BOSS_SPRITES, ENEMY_BIG_EXPLOSION_SOUND,
+                                 ENEMY_EXPLOSION_SOUND, Explosion)
             enemy_kill_group.empty()
 
     def boss_hit(self, hit_group, sound_play, music_play, dmg, explosion_sound, music_track, explosion_class):
@@ -139,11 +140,12 @@ class Game:
                 self.enemy_boss = None
                 break
 
-    def torpedo_hit(self, music_track, explosion_anim, explosion_sound_big, explosion_sound_small, explosion_class):
-        self.enemy_destroyed(self.enemy_ships_group, False, play_sound, 'regular', explosion_anim,
+    def torpedo_hit(self, music_track, explosion_anim, explosion_anim_big, explosion_sound_big, explosion_sound_small,
+                    explosion_class):
+        self.enemy_destroyed(self.enemy_ships_group, False, play_sound, 'regular', explosion_anim, explosion_anim_big,
                              explosion_sound_big, explosion_sound_small, explosion_class)
         self.enemy_destroyed(self.enemy_ships_advanced_group, False, play_sound, 'advanced', explosion_anim,
-                             explosion_sound_big, explosion_sound_small, explosion_class)
+                             explosion_anim_big, explosion_sound_big, explosion_sound_small, explosion_class)
         if play_sound:
             pygame.mixer.Sound.play(explosion_sound_small)
             pygame.mixer.Sound.play(explosion_sound_big)
@@ -209,7 +211,8 @@ class Game:
                                                              is not None)
                 if self.enemy_kill:
                     self.enemy_destroyed(self.enemy_kill, True, play_sound, 'regular', EXPLOSION_ENEMY_SPRITES,
-                                         ENEMY_BIG_EXPLOSION_SOUND, ENEMY_EXPLOSION_SOUND, Explosion)
+                                         EXPLOSION_BOSS_SPRITES, ENEMY_BIG_EXPLOSION_SOUND, ENEMY_EXPLOSION_SOUND,
+                                         Explosion)
 
                 self.enemy_advanced_hit = pygame.sprite.groupcollide(self.lasers_group,
                                                                      self.enemy_ships_advanced_group, True, False,
@@ -235,8 +238,8 @@ class Game:
                                                                          collide_mask(s1, s2) is not None)
 
                 if self.torpedo_hit_enemy or self.torpedo_hit_advanced_enemy or self.enemy_boss_torpedo_hit:
-                    self.torpedo_hit(GAMEPLAY_MUSIC, EXPLOSION_ENEMY_SPRITES, ENEMY_BIG_EXPLOSION_SOUND,
-                                     ENEMY_EXPLOSION_SOUND, Explosion)
+                    self.torpedo_hit(GAMEPLAY_MUSIC, EXPLOSION_ENEMY_SPRITES, EXPLOSION_BOSS_SPRITES,
+                                     ENEMY_BIG_EXPLOSION_SOUND, ENEMY_EXPLOSION_SOUND, Explosion)
 
                 # Check if an enemy collided with player ship or if an enemy killed player ship
                 if current_time - self.death_time > 3000:

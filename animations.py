@@ -33,8 +33,8 @@ class MovingBackground:
     def update(self):
         self.img_back_XY1 = (0, self.img_back_XY1[1] + self.mov_speed_img_back)
         self.img_back_XY2 = (0, self.img_back_XY2[1] + self.mov_speed_img_back)
-        self.img_front_XY1 = (0, self.img_back_XY1[1] + self.mov_speed_img_front)
-        self.img_front_XY2 = (0, self.img_back_XY2[1] + self.mov_speed_img_front)
+        self.img_front_XY1 = (0, self.img_front_XY1[1] + self.mov_speed_img_front)
+        self.img_front_XY2 = (0, self.img_front_XY2[1] + self.mov_speed_img_front)
         if self.img_back_XY1[1] >= self.rect_img_back.height:
             self.img_back_XY1 = (0, -self.rect_img_back.height)
         if self.img_back_XY2[1] >= self.rect_img_back.height:
