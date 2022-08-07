@@ -146,8 +146,8 @@ class Game:
 
     def torpedo_hit(self, music_track, explosion_anim, explosion_anim_big, explosion_sound_big, explosion_sound_small,
                     explosion_class):
-        self.enemy_destroyed(self.enemy_ships_group.__dict__, False, play_sound, 'regular', explosion_anim, explosion_anim_big,
-                             explosion_sound_big, explosion_sound_small, explosion_class)
+        self.enemy_destroyed(self.enemy_ships_group.__dict__, False, play_sound, 'regular', explosion_anim,
+                             explosion_anim_big, explosion_sound_big, explosion_sound_small, explosion_class)
         self.enemy_destroyed(self.enemy_ships_advanced_group.__dict__, False, play_sound, 'advanced', explosion_anim,
                              explosion_anim_big, explosion_sound_big, explosion_sound_small, explosion_class)
         if play_sound:
@@ -253,7 +253,7 @@ class Game:
                                                             collided=lambda s1, s2: pygame.sprite.collide_mask(s1, s2)
                                                             is not None)
                     self.crash_advanced = pygame.sprite.groupcollide(self.player_group, self.enemy_ships_advanced_group,
-                                                                     True, True, collided=lambda s1, s2: pygame.sprite.
+                                                                     True, False, collided=lambda s1, s2: pygame.sprite.
                                                                      collide_mask(s1, s2) is not None)
 
                     self.player_kill = pygame.sprite.groupcollide(self.enemy_lasers_group, self.player_group, True,
@@ -269,7 +269,8 @@ class Game:
                             if self.crash:
                                 self.score += 10
                             if self.crash_advanced:
-                                self.score += 50
+                                self.enemy_advanced_damaged(self.crash_advanced, self.enemy_advanced_kill,
+                                                            self.enemy_ships_advanced_group)
                         if self.player_kill:
                             explosion_player = Explosion(self.player_ship.rect.centerx, self.player_ship.rect.centery,
                                                          EXPLOSION_PLAYER_SPRITES)
@@ -351,14 +352,13 @@ class Game:
                                                                      False, collided=lambda s1, s2: pygame.sprite.
                                                                      collide_mask(s1, s2) is not None)
                     self.boss_health = self.font.render(f"BOSS HEALTH  {self.enemy_boss.life:03d}", True, "green", None)
-                    if self.enemy_boss_hit:
-                        self.boss_hit(self.enemy_boss_group, play_sound, play_music, 1, ENEMY_BIG_EXPLOSION_SOUND,
-                                      GAMEPLAY_MUSIC, Explosion)
-
                     self.crash_boss = pygame.sprite.groupcollide(self.player_group, self.enemy_boss_group, True, False,
                                                                  collided=lambda s1, s2: pygame.sprite.collide_mask(s1,
                                                                                                                     s2)
                                                                  is not None)
+                    if self.enemy_boss_hit or self.crash_boss:
+                        self.boss_hit(self.enemy_boss_group, play_sound, play_music, 1, ENEMY_BIG_EXPLOSION_SOUND,
+                                      GAMEPLAY_MUSIC, Explosion)
 
                 # Update background and groups
                 self.bg_animated.update()
@@ -422,6 +422,8 @@ class Game:
                                 play_music = mute_unmute_music(play_music, self.music_track, 0.3)
                             if event.key == pygame.K_s:
                                 play_sound = not play_sound
+                        if event.type == pygame.QUIT:
+                            exit_game()
                     screen_update(WINDOW, WIDTH, HEIGHT, RESOLUTION, FramesPerSec, FPS)
 
     def sub_menu(self, picture):
@@ -465,6 +467,8 @@ class Game:
                         save_new_score(UserScore(random.randint(0, 100), f"{chr(letters[0])}{chr(letters[1])}"
                                                                          f"{chr(letters[2])}", self.score))
                         run = False
+                if event.type == pygame.QUIT:
+                    exit_game()
 
             score = score_font.render(f"{chr(letters[0])}{chr(letters[1])}{chr(letters[2])}: {self.score:010d}", True,
                                       "green", None)
