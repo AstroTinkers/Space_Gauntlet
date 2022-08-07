@@ -93,10 +93,10 @@ class Game:
                         explosion_sound_big, explosion_sound_small, explosion_class):
         for enemy in enemy_group:
             if enemy_type == 'advanced':
-                enemy_explosion = explosion_class(enemy.rect.x, enemy.rect.y, explosion_anim_big)
+                enemy_explosion = explosion_class(enemy.rect.centerx, enemy.rect.centery, explosion_anim_big)
                 self.score += 100
             else:
-                enemy_explosion = explosion_class(enemy.rect.x, enemy.rect.y, explosion_anim)
+                enemy_explosion = explosion_class(enemy.rect.centerx, enemy.rect.centery, explosion_anim)
                 self.score += 10
                 self.kill_count += 1
             self.explosion_group.add(enemy_explosion)
@@ -128,7 +128,7 @@ class Game:
         for _ in iter(hit_group):
             self.enemy_boss.life -= dmg
             if self.enemy_boss.life <= 0:
-                enemy_explosion = explosion_class(self.enemy_boss.rect.x, self.enemy_boss.rect.y,
+                enemy_explosion = explosion_class(self.enemy_boss.rect.centerx, self.enemy_boss.rect.centery,
                                                   EXPLOSION_BOSS_SPRITES)
                 self.explosion_group.add(enemy_explosion)
                 self.music_track = music_track
@@ -261,7 +261,7 @@ class Game:
                         if play_sound:
                             pygame.mixer.Sound.play(PLAYER_EXPLOSION_SOUND)
                         if self.crash or self.crash_advanced or self.crash_boss:
-                            explosion_player = Explosion(self.player_ship.rect[0], self.player_ship.rect[1],
+                            explosion_player = Explosion(self.player_ship.rect.centerx, self.player_ship.rect.centery,
                                                          EXPLOSION_PLAYER_CRASH_SPRITES)
                             self.explosion_group.add(explosion_player)
                             if self.crash:
