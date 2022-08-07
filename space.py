@@ -24,6 +24,7 @@ class Game:
         self.enemy_boss_counter = 1
         self.enemy_boss_spawn = False
         self.pause = False
+        self.down_time = ""
 
         # Player ship
         self.player_ship = PlayerShip(1920, 1080, PLAYER_SHIP_SPRITES, PLAYER_SHIP_INVULNERABLE_SPRITES)
@@ -138,6 +139,7 @@ class Game:
                 self.enemy_boss_spawn = False
                 self.enemy_boss_group.empty()
                 self.enemy_boss = None
+                self.down_time = pygame.time.get_ticks()
                 break
 
     def torpedo_hit(self, music_track, explosion_anim, explosion_anim_big, explosion_sound_big, explosion_sound_small,
@@ -177,8 +179,8 @@ class Game:
 
         play_track(self.music_track, 0.3, play_music)
 
-        # Local time variable to set enemy spawn time after starting a new game
-        start_time = pygame.time.get_ticks()
+        # Local time variable to set enemy spawn time after starting a new game or killing a boss
+        self.down_time = pygame.time.get_ticks()
 
         run = True
         while run:
@@ -277,14 +279,14 @@ class Game:
                     self.player_ship.invulnerable = True
 
                 # Check if enemies are less than max number of enemies and add more
-                if not self.enemy_boss_spawn and current_time - start_time > 10000:
+                if not self.enemy_boss_spawn and current_time - self.down_time > 5000:
                     if self.max_enemies > len(self.enemy_ships_group) >= 0 and current_time - self.enemy_spawn_time > \
                             1000:
                         self.enemy_ships_group.add(EnemyShip(1920, ENEMY_SHIP_SPRITES))
                         self.enemy_spawn_time = pygame.time.get_ticks()
                         # Increase max number of active enemies based on player score
                         if self.score / 200 >= self.max_enemies:
-                            self.max_enemies += 2
+                            self.max_enemies += 1
 
                     # Check kill count and spawn an advanced enemy for every 10 regular enemies killed
                     if self.kill_count >= 10:

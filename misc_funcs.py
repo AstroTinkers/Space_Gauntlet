@@ -95,7 +95,7 @@ def mute_unmute_visualize(play, screen, img_mute, img_unmute, x, y):
 
 
 def play_track(music_track, volume, play):
-    pygame.mixer.fadeout(1000)
+    pygame.mixer.stop()
     music_track.set_volume(volume)
     pygame.mixer.Sound.play(music_track, -1, fade_ms=5000)
     if not play:
