@@ -43,8 +43,8 @@ class Game:
         self.enemy_ships_group = pygame.sprite.Group()
         self.enemy_ships_advanced_group = pygame.sprite.Group()
         self.enemy_boss_group = pygame.sprite.Group()
-        self.enemy_kill = {}
-        self.enemy_advanced_hit = {}
+        self.enemy_kill = pygame.sprite.Group()
+        self.enemy_advanced_hit = pygame.sprite.Group()
         self.enemy_advanced_kill = pygame.sprite.Group()
         self.enemy_spawn_time = pygame.time.get_ticks()
         self.crash = {}
@@ -91,15 +91,17 @@ class Game:
 
     def enemy_destroyed(self, enemy_group, audio_play, sound_play, enemy_type, explosion_anim, explosion_anim_big,
                         explosion_sound_big, explosion_sound_small, explosion_class):
-        for enemy in enemy_group:
-            if enemy_type == 'advanced':
-                enemy_explosion = explosion_class(enemy.rect.centerx, enemy.rect.centery, explosion_anim_big)
-                self.score += 100
-            else:
-                enemy_explosion = explosion_class(enemy.rect.centerx, enemy.rect.centery, explosion_anim)
-                self.score += 10
-                self.kill_count += 1
-            self.explosion_group.add(enemy_explosion)
+        for collision in enemy_group:
+            for enemy in enemy_group[collision]:
+                if enemy_type == 'advanced':
+                    enemy_explosion = explosion_class(enemy.rect.centerx, enemy.rect.centery,
+                                                      explosion_anim_big)
+                    self.score += 100
+                else:
+                    enemy_explosion = explosion_class(enemy.rect.centerx, enemy.rect.centery, explosion_anim)
+                    self.score += 10
+                    self.kill_count += 1
+                self.explosion_group.add(enemy_explosion)
             if sound_play:
                 if audio_play and enemy_type == 'advanced':
                     pygame.mixer.Sound.play(explosion_sound_big)
@@ -119,7 +121,7 @@ class Game:
             del enemy_hit_group[key]
 
         if enemy_kill_group:
-            self.enemy_destroyed(self.enemy_advanced_kill, True, play_sound, 'advanced',
+            self.enemy_destroyed(enemy_kill_group.__dict__, True, play_sound, 'advanced',
                                  EXPLOSION_ENEMY_SPRITES, EXPLOSION_BOSS_SPRITES, ENEMY_BIG_EXPLOSION_SOUND,
                                  ENEMY_EXPLOSION_SOUND, Explosion)
             enemy_kill_group.empty()
@@ -144,9 +146,9 @@ class Game:
 
     def torpedo_hit(self, music_track, explosion_anim, explosion_anim_big, explosion_sound_big, explosion_sound_small,
                     explosion_class):
-        self.enemy_destroyed(self.enemy_ships_group, False, play_sound, 'regular', explosion_anim, explosion_anim_big,
+        self.enemy_destroyed(self.enemy_ships_group.__dict__, False, play_sound, 'regular', explosion_anim, explosion_anim_big,
                              explosion_sound_big, explosion_sound_small, explosion_class)
-        self.enemy_destroyed(self.enemy_ships_advanced_group, False, play_sound, 'advanced', explosion_anim,
+        self.enemy_destroyed(self.enemy_ships_advanced_group.__dict__, False, play_sound, 'advanced', explosion_anim,
                              explosion_anim_big, explosion_sound_big, explosion_sound_small, explosion_class)
         if play_sound:
             pygame.mixer.Sound.play(explosion_sound_small)
@@ -269,7 +271,7 @@ class Game:
                             if self.crash_advanced:
                                 self.score += 50
                         if self.player_kill:
-                            explosion_player = Explosion(self.player_ship.rect[0], self.player_ship.rect[1],
+                            explosion_player = Explosion(self.player_ship.rect.centerx, self.player_ship.rect.centery,
                                                          EXPLOSION_PLAYER_SPRITES)
                             self.explosion_group.add(explosion_player)
                         self.player_ship.player_lives -= 1
