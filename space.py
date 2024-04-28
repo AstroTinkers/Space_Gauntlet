@@ -1,4 +1,5 @@
-from screeninfo import get_monitors
+import asyncio
+from screeninfo import get_monitors, ScreenInfoError
 import pygame.transform
 from pygame.locals import *
 
@@ -232,18 +233,18 @@ class Game:
                                                                     False, collided=lambda s1, s2: pygame.sprite.
                                                                     collide_mask(s1, s2) is not None)
                 self.torpedo_hit_advanced_enemy = pygame.sprite.groupcollide(self.torpedoes_group,
-                                                                             self.enemy_ships_advanced_group, True,
-                                                                             False, collided=lambda s1, s2: pygame.
-                                                                             sprite.collide_mask(s1, s2) is not None)
+                                                                            self.enemy_ships_advanced_group, True,
+                                                                            False, collided=lambda s1, s2: pygame.
+                                                                            sprite.collide_mask(s1, s2) is not None)
 
                 self.enemy_boss_torpedo_hit = pygame.sprite.groupcollide(self.torpedoes_group,
-                                                                         self.enemy_boss_group, True, False,
-                                                                         collided=lambda s1, s2: pygame.sprite.
-                                                                         collide_mask(s1, s2) is not None)
+                                                                        self.enemy_boss_group, True, False,
+                                                                        collided=lambda s1, s2: pygame.sprite.
+                                                                        collide_mask(s1, s2) is not None)
 
                 if self.torpedo_hit_enemy or self.torpedo_hit_advanced_enemy or self.enemy_boss_torpedo_hit:
                     self.torpedo_hit(GAMEPLAY_MUSIC, EXPLOSION_ENEMY_SPRITES, EXPLOSION_BOSS_SPRITES,
-                                     ENEMY_BIG_EXPLOSION_SOUND, ENEMY_EXPLOSION_SOUND, Explosion)
+                                    ENEMY_BIG_EXPLOSION_SOUND, ENEMY_EXPLOSION_SOUND, Explosion)
 
                 # Check if an enemy collided with player ship or if an enemy killed player ship
                 if current_time - self.death_time > 3000:
@@ -253,18 +254,18 @@ class Game:
                                                             collided=lambda s1, s2: pygame.sprite.collide_mask(s1, s2)
                                                             is not None)
                     self.crash_advanced = pygame.sprite.groupcollide(self.player_group, self.enemy_ships_advanced_group,
-                                                                     True, False, collided=lambda s1, s2: pygame.sprite.
-                                                                     collide_mask(s1, s2) is not None)
+                                                                    True, False, collided=lambda s1, s2: pygame.sprite.
+                                                                    collide_mask(s1, s2) is not None)
 
                     self.player_kill = pygame.sprite.groupcollide(self.enemy_lasers_group, self.player_group, True,
-                                                                  True, collided=lambda s1, s2: pygame.sprite.
-                                                                  collide_mask(s1, s2) is not None)
+                                                                True, collided=lambda s1, s2: pygame.sprite.
+                                                                collide_mask(s1, s2) is not None)
                     if self.crash or self.player_kill or self.crash_advanced or self.crash_boss:
                         if play_sound:
                             pygame.mixer.Sound.play(PLAYER_EXPLOSION_SOUND)
                         if self.crash or self.crash_advanced or self.crash_boss:
                             explosion_player = Explosion(self.player_ship.rect.centerx, self.player_ship.rect.centery,
-                                                         EXPLOSION_PLAYER_CRASH_SPRITES)
+                                                        EXPLOSION_PLAYER_CRASH_SPRITES)
                             self.explosion_group.add(explosion_player)
                             if self.crash:
                                 self.score += 10
@@ -273,7 +274,7 @@ class Game:
                                                             self.enemy_ships_advanced_group)
                         if self.player_kill:
                             explosion_player = Explosion(self.player_ship.rect.centerx, self.player_ship.rect.centery,
-                                                         EXPLOSION_PLAYER_SPRITES)
+                                                        EXPLOSION_PLAYER_SPRITES)
                             self.explosion_group.add(explosion_player)
                         self.player_ship.player_lives -= 1
                         self.player_ship.kill()
@@ -306,7 +307,7 @@ class Game:
                         if self.player_group:
                             if event.key == pygame.K_SPACE and current_time - self.player_ship.last_shot > 150:
                                 self.lasers_group.add(self.player_ship.create_projectile("laser", PLAYER_LASER,
-                                                                                         DeltaTime))
+                                                                                        DeltaTime))
                                 if play_sound:
                                     pygame.mixer.Sound.play(PLAYER_LASER_SOUND)
                             if (event.key == pygame.K_LCTRL or event.key == pygame.K_RCTRL) and self.torpedoes > 0:
@@ -346,19 +347,19 @@ class Game:
                 if self.enemy_boss_spawn:
                     self.enemy_boss.update()
                     self.boss_shoot_and_move(current_time, ENEMY_BOSS_PROJECTILE_NARROW,
-                                             ENEMY_BOSS_PROJECTILE_WIDE, ENEMY_ADVANCED_LASER_SOUND, DeltaTime, WINDOW,
-                                             HEIGHT)
+                                            ENEMY_BOSS_PROJECTILE_WIDE, ENEMY_ADVANCED_LASER_SOUND, DeltaTime, WINDOW,
+                                            HEIGHT)
                     self.enemy_boss_hit = pygame.sprite.groupcollide(self.lasers_group, self.enemy_boss_group, True,
-                                                                     False, collided=lambda s1, s2: pygame.sprite.
-                                                                     collide_mask(s1, s2) is not None)
+                                                                    False, collided=lambda s1, s2: pygame.sprite.
+                                                                    collide_mask(s1, s2) is not None)
                     self.boss_health = self.font.render(f"BOSS HEALTH  {self.enemy_boss.life:03d}", True, "green", None)
                     self.crash_boss = pygame.sprite.groupcollide(self.player_group, self.enemy_boss_group, True, False,
-                                                                 collided=lambda s1, s2: pygame.sprite.collide_mask(s1,
+                                                                collided=lambda s1, s2: pygame.sprite.collide_mask(s1,
                                                                                                                     s2)
-                                                                 is not None)
+                                                                is not None)
                     if self.enemy_boss_hit or self.crash_boss:
                         self.boss_hit(self.enemy_boss_group, play_sound, play_music, 1, ENEMY_BIG_EXPLOSION_SOUND,
-                                      GAMEPLAY_MUSIC, Explosion)
+                                    GAMEPLAY_MUSIC, Explosion)
 
                 # Update background and groups
                 self.bg_animated.update()
@@ -424,7 +425,7 @@ class Game:
                                 play_sound = not play_sound
                         if event.type == pygame.QUIT:
                             exit_game()
-                    screen_update(WINDOW, WIDTH, HEIGHT, RESOLUTION, FramesPerSec, FPS)
+                    screen_update(WINDOW, WIDTH, HEIGHT, RESOLUTION, FramesPerSec, FPS)            
 
     def sub_menu(self, picture):
         run = True
@@ -465,13 +466,13 @@ class Game:
                             letter_index += 1
                     if event.key == pygame.K_RETURN:
                         save_new_score(UserScore(random.randint(0, 100), f"{chr(letters[0])}{chr(letters[1])}"
-                                                                         f"{chr(letters[2])}", self.score))
+                                                                        f"{chr(letters[2])}", self.score))
                         run = False
                 if event.type == pygame.QUIT:
                     exit_game()
 
             score = score_font.render(f"{chr(letters[0])}{chr(letters[1])}{chr(letters[2])}: {self.score:010d}", True,
-                                      "green", None)
+                                    "green", None)
             letter_pos(letter_index, POS_1, POS_2, POS_3, WINDOW)
             WINDOW.blit(score, (660, 500))
             screen_update(WINDOW, WIDTH, HEIGHT, RESOLUTION, FramesPerSec, FPS)
@@ -501,7 +502,7 @@ class Game:
             WINDOW.blit(score_font.render("Press Esc to return to Main Menu", True, "green", None), (495, 850))
             screen_update(WINDOW, WIDTH, HEIGHT, RESOLUTION, FramesPerSec, FPS)
 
-    def main_menu(self):
+    async def main_menu(self):
 
         # Play/pause music and sounds
         global play_music
@@ -536,18 +537,26 @@ class Game:
                     if event.key == pygame.K_s:
                         play_sound = not play_sound
             screen_update(WINDOW, WIDTH, HEIGHT, RESOLUTION, FramesPerSec, FPS)
-
+            await asyncio.sleep(0) 
+    
 
 # Initializing
 pygame.mixer.pre_init(44100, 16, 2, 4096)
+pygame.mixer.init()
 pygame.init()
 pygame.event.set_allowed([pygame.QUIT, pygame.KEYDOWN])
 
 # Game global parameters
-WIDTH, HEIGHT = [(m.width, m.height) for m in get_monitors() if m.is_primary][0]
-FLAGS = FULLSCREEN | DOUBLEBUF
+WIDTH = 1920
+HEIGHT = 1080
+try:
+    SCR_WIDTH, SCR_HEIGHT = [(m.width, m.height) for m in get_monitors() if m.is_primary][0]
+except ScreenInfoError:
+    SCR_WIDTH, SCR_HEIGHT = WIDTH, HEIGHT
+    
+FLAGS = FULLSCREEN | DOUBLEBUF | SCALED
 RESOLUTION = pygame.display.set_mode((WIDTH, HEIGHT), FLAGS, 16)
-WINDOW = pygame.Surface((1920, 1080))
+WINDOW = pygame.Surface((SCR_WIDTH, SCR_HEIGHT))
 WINDOW_LIMIT = WINDOW.get_rect()
 
 # Mute/unmute variables
@@ -624,4 +633,4 @@ DeltaTime = FramesPerSec.tick(FPS) / 1000
 game = Game()
 
 if __name__ == "__main__":
-    game.main_menu()
+    asyncio.run(game.main_menu())
